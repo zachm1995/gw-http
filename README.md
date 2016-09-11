@@ -20,6 +20,9 @@ Expand this code to
 - **[MEDIUM]** add a plugin facility so that different server tasks can be plugged in
 - **[EASY]** include more HTTP options and extensions
 - **[MEDIUM]** include Rust extensions
+- **[HARD]** add isolation of plugins using 1. processes, then 2. `chroot` or container equivalents
+- **[HARD]** integrate with **slack** as a plugin
+- **[MEDIUM]** add Travis CI integration on github
 - **[TRIVIAL]** RULE THE WORLD
 
 Add your own!
