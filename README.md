@@ -23,6 +23,8 @@ Expand this code to
  - add a webpage that displays these messages, with a prompt at the bottom that makes the next PUT request
  - add auto-refresh logic to the webpage
  - now you have a trivial message board!
+- **[HARD]** Add [fastcgi](https://en.wikipedia.org/wiki/FastCGI) support
+ - Also integrate with [memcache](https://memcached.org/) to cache output because performance!
 - **[MEDIUM]** add messaging logic so that this is also a message server with a REST API for all of its functionality
 - **[EASY]** perform routing so that certain paths (e.g. `/gwmsg/`) go to specific plugins
 - **[MEDIUM]** add a plugin facility so that different server tasks can be plugged in (e.g. messaging)
