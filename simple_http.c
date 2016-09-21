@@ -67,27 +67,62 @@ find_whitespace(char *s)
 	return s;
 }
 
+/* FIXME: only parsing a single parameter */
+static inline int
+parse_param(char *params, char **key, char **val)
+{
+	char *end;
+
+	*key = params;
+	*val = strchr(params, '=');
+	if (!*val) return 0;
+	(*val)++;
+	/* assume that the path is \0 terminated */
+	if ((end = strchr(params, '&'))) *end = '\0'; /* ignore other parameters for now... */
+
+	return 0;
+}
+
 /*
  * Pass in the request.  Set the ->path field in r to point to the
- * path that is being requested.
+ * path that is being requested.  Parse requests of the general form:
+ *
+ * GET /needs_uri?msg=lkasldjfasdf HTTP/1.1
+ * Host: localhost:8081
+ * Connection: keep-alive
+ * Accept: *\*
+ * X-Requested-With: XMLHttpRequest
+ * User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/52.0.2743.116 Chrome/52.0.2743.116 Safari/537.36
+ * Referer: http://localhost:8081/shc-messenger.html
+ * Accept-Encoding: gzip, deflate, sdch
+ * 	Accept-Language: en-US,en;q=0.8
  */
 int
 shttp_get_path(struct http_req *r)
 {
-	char *curr, *end, *path;
+	char *curr, *end, *path, *param;
 
 	assert(r);
 	assert(r->request);
 
+	printf("GET Request:\n%s\n", r->request);
+
 	if (strncmp(r->request, "GET ", strlen("GET "))) return -1;
 	path = curr = r->request + sizeof("GET ")-1;
+
+	if (*path == '/') path++;
+	r->path = path;
 
 	end = find_whitespace(curr);
 	if (*end == '\0') return -1;
 	*end = '\0';
 
-	if (*path == '/') path++;
-	r->path = path;
+	param = strchr(path, '?');
+	if (param && param < end) {
+		*param = '\0';
+		param++;
+		if (parse_param(param, &r->key, &r->val)) return -1;
+	}
 
 	return 0;
 }

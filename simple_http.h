@@ -33,6 +33,8 @@ struct http_req {
 	int   req_len;
 	char *path; 		/* points to string inside of request */
 
+	char *key, *val;
+
 	/* Response information */
 	char *resp_head, *response;
 	int   resp_hd_len, resp_len;

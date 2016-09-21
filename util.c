@@ -147,7 +147,7 @@ client_process(int fd)
 	assert(r);
 	assert(r->path);
 
-	response = content_get(r->path, &len);
+	response = content_get(r, r->path, &len);
 	if (!response) {
 		shttp_free_req(r);
 		return;

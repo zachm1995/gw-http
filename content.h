@@ -25,11 +25,13 @@
 #ifndef CONTENT_H
 #define CONTENT_H
 
+#include <simple_http.h>
+
 /*
  * Take the path we want to read, and return the data associated with
  * that.  content_len is set to be the length of the data that is
  * returned.  The caller must free the returned string.
  */
-char *content_get(char *path, int *content_len);
+char *content_get(struct http_req *r, char *path, int *content_len);
 
 #endif

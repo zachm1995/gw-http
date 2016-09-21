@@ -31,11 +31,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
+
+#include <simple_http.h>
 
 /* 10 MB is max size */
 #define MAX_CONTENT_SZ (1024*1024*10)
 
-char *
+static char *
 error_resp(char *path, int *len)
 {
 	//const char eresponse[] = "<html><head><title>X-P</title></head><body><font face=\"sans-serif\"><center><h1>X-P</h1><p>Could not find content at <b>%s</b>.</p><p><a href=\"http://giphy.com/gifs/14kdiJUblbWBXy/tile\">HACK THE PLANET!</a></p></center></font></body></html>";
@@ -49,24 +52,77 @@ error_resp(char *path, int *len)
 	return resp;
 }
 
-int
-sanity_check(char *path)
-{ return (path[0] == '.' || path[0] == '/'); }
+typedef char *(*content_fn_t)(struct http_req *r, char *path, int *content_len);
 
-char *
-content_get(char *path, int *content_len)
+#define NMSG 64
+#define LINE_MAXSZ 256
+struct messages {
+	char  *ms[NMSG];
+	int    head;
+};
+static struct messages msgs;
+static const char *line_chrome = "<li>%s</li>";
+static const char *chrome_pre  = "<ul>";
+static const char *chrome_post = "</ul>";
+static const size_t max_resp   = sizeof(chrome_pre) + sizeof(chrome_post) + ((LINE_MAXSZ + sizeof(line_chrome)) * NMSG);
+static char buff[sizeof(chrome_pre) + sizeof(chrome_post) + ((LINE_MAXSZ + sizeof(line_chrome)) * NMSG)];
+
+static char *
+get_shcmsg(struct http_req *r, char *path, int *content_len)
 {
-	char *resp;
+	size_t len;
+	char  *resp;
+	char  *msg, *curs;
+	int i;
+	(void)path;
+	(void)r;
+
+	/* TODO: make the path include msg/channel to select different channels */
+
+	/* add the message if there is one! */
+	if (r->val) {
+		len = strlen(r->val);
+		msg = malloc(len+1);
+		strcpy(msg, r->val);
+		if (msgs.ms[msgs.head]) free(msgs.ms[msgs.head]);
+		msgs.ms[msgs.head] = msg;
+		msgs.head = (msgs.head + 1) % NMSG;
+	}
+
+	/* construct the response */
+	buff[0] = '\0';
+	strcat(buff, chrome_pre);
+	curs = &buff[sizeof(chrome_pre)];
+	for (i = 0 ; i < NMSG ; i++) {
+		char *line = msgs.ms[(i + msgs.head) % NMSG];
+		int consumed = 0;
+
+		if (!line) continue;
+		consumed = snprintf(curs, (max_resp - (curs-buff) - sizeof(chrome_pre)), line_chrome, line);
+		curs += consumed;
+		assert(curs < buff + max_resp);
+	}
+	strcat(curs, chrome_post);
+	curs += sizeof(chrome_post);
+
+	len  = curs - buff + 1;
+	resp = malloc(len);
+	assert(resp);
+	strcpy(resp, buff);
+	*content_len = len;
+
+	return resp;
+}
+
+static char *
+get_file(struct http_req *r, char *path, int *content_len)
+{
 	int content_fd, amnt_read = 0;
 	struct stat s;
+	char *resp;
+	(void)r;
 
-#ifdef THINK_TIME
-	sleep(1);
-#endif
-
-	/* Bad path?  No file?  Too large? */
-	if (sanity_check(path) ||
-	    stat(path, &s)     ||
+	if (stat(path, &s) ||
 	    s.st_size > MAX_CONTENT_SZ) goto err;
 
 	content_fd = open(path, O_RDONLY);
@@ -89,6 +145,48 @@ err_free:
 	free(resp);
 err_close:
 	close(content_fd);
+err:
+	return NULL;
+}
+
+struct route_tbl {
+	char *path;
+	content_fn_t handler;
+} routes[] = {
+	{.path = "msg/",   .handler = get_shcmsg },
+	{.path = "",       .handler = get_file }, /* default path...should match all queries */
+	{.path = NULL,     .handler = NULL}
+};
+
+static char *
+route(struct http_req *r, char *path, int *content_len)
+{
+	int i;
+
+	for (i = 0 ; routes[i].path ; i++) {
+		if (!strstr(path, routes[i].path)) continue;
+		assert(routes[i].handler);
+		return routes[i].handler(r, path, content_len);
+	}
+
+	assert(0); 		/* Should NOT get here...see default case above */
+	return NULL;
+}
+
+static int
+sanity_check(char *path)
+{ return (path[0] == '.' || path[0] == '/'); }
+
+char *
+content_get(struct http_req *r, char *path, int *content_len)
+{
+	char *resp;
+
+	/* Bad path?  No file?  Too large? */
+	if (sanity_check(path))                    goto err;
+	if (!(resp = route(r, path, content_len))) goto err;
+
+	return resp;
 err:
 	return error_resp(path, content_len);
 }

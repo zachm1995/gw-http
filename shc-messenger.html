@@ -10,7 +10,7 @@
     .footer {
         position:fixed;
         left:10px;
-        bottom:0px;
+        bottom:10px;
         height:40px;
         width:100%;
     }
@@ -21,14 +21,14 @@
 
         <div class='footer'>
             <textarea form='form' name="message_txt" id="message_txt" cols='65' rows='2' placeholder="Did you know fork = recursion ..." ></textarea>
-            <button type='button' onclick="sendMessage() "class="pull-right">Send</button>
+            <button type='button' onclick="sendMessage()" class="pull-right">Send</button>
         </div>
     </body>
 
     <script>
     function fetchMessages() {
         //get request - specifies uri and callback function
-        $.get("needs_uri", function(data, status) {
+        $.get("msg/", function(data, status) {
             //replace the html in the converstaion with what was returned by get request
             document.getElementById('conversation').innerHTML = data;
         });
@@ -41,7 +41,7 @@
         var message = document.getElementById("message_txt").value;
 
         //Post request - sends the message to the specified endpoint
-        $.post('needs_uri', {msg : message}, function(data,status) {
+        $.get('msg/', {msg : message}, function(data,status) {
             document.getElementById("message_txt").value = "";
         });
     }
