@@ -57,17 +57,14 @@
  */
 
 void
-server_single_request(int accept_fd)
+server_process(int accept_fd)
 {
 	int fd;
 
-	/*
-	 * The server thread will always want to be doing the accept.
-	 * That main thread will want to hand off the new fd to the
-	 * new threads/processes/thread pool.
-	 */
-	fd = server_accept(accept_fd);
-	client_process(fd);
+	while (1) {
+		fd = server_accept(accept_fd);
+		client_process(fd);
+	}
 
 	return;
 }
@@ -89,7 +86,7 @@ main(int argc, char *argv[])
 	accept_fd = server_create(port);
 	if (accept_fd < 0) return -1;
 
-	server_single_request(accept_fd);
+	server_process(accept_fd);
 	close(accept_fd);
 
 	return 0;

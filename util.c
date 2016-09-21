@@ -71,7 +71,7 @@ newfd_create_req(int new_fd)
 	}
 	if (shttp_get_path(r)) {
 		data[amnt] = '\0';
-		printf("Incorrectly formatted HTTP request:\n\t%s\n", data);
+		printf("Incorrectly formatted HTTP request (size %d):\n%s\n", amnt, data);
 		shttp_free_req(r);
 		return NULL;
 	}

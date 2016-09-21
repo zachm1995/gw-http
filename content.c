@@ -38,7 +38,8 @@
 char *
 error_resp(char *path, int *len)
 {
-	const char eresponse[] = "<html><head><title>X-P</title></head><body><font face=\"sans-serif\"><center><h1>X-P</h1><p>Could not find content at <b>%s</b>.</p></font></center></body>";
+	//const char eresponse[] = "<html><head><title>X-P</title></head><body><font face=\"sans-serif\"><center><h1>X-P</h1><p>Could not find content at <b>%s</b>.</p><p><a href=\"http://giphy.com/gifs/14kdiJUblbWBXy/tile\">HACK THE PLANET!</a></p></center></font></body></html>";
+	const char eresponse[] = "<font face=\"sans-serif\"><center><h1>X-P</h1><p>Could not find content at <b>%s</b>.</p><p><a href=\"http://giphy.com/gifs/14kdiJUblbWBXy/tile\">HACK THE PLANET!</a></p></center></font>";
 	char *resp;
 	int sz = strlen(eresponse) + strlen(path);
 
