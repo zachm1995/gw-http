@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <title>SHC Messenger</title>
+    </head>
+
+    <style>
+    .footer {
+        position:fixed;
+        left:10px;
+        bottom:0px;
+        height:40px;
+        width:100%;
+    }
+    </style>
+
+    <body onload='fetchMessages()'>
+        <div id='conversation'> <!-- Conversation inserted here by fetchMessages --> </div>
+
+        <div id='form' class='footer' method='post' action='need_uri'>
+            <form>
+                <textarea form='form' name="message_txt"  cols='65' rows='2' placeholder="Did you know fork = recursion ..." ></textarea>
+                <input type="submit" value="Send" class="pull-right"/>
+            </form>
+        </div>
+    </body>
+
+    <script>
+    function fetchMessages() {
+        //get request - specifies uri and callback function
+        $.get("needs_uri", function(data, status) {
+            //replace the html in the converstaion with what was returned by get request
+            document.getElementByID('conversation').innerHTML = data;
+        });
+
+        //calls this function again in a second.
+        window.setTimeout(fetchMessages, 1000);
+    }
+    </script>
+</html>
