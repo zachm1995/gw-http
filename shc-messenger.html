@@ -19,11 +19,9 @@
     <body onload='fetchMessages()'>
         <div id='conversation'> <!-- Conversation inserted here by fetchMessages --> </div>
 
-        <div id='form' class='footer' method='post' action='need_uri'>
-            <form>
-                <textarea form='form' name="message_txt"  cols='65' rows='2' placeholder="Did you know fork = recursion ..." ></textarea>
-                <input type="submit" value="Send" class="pull-right"/>
-            </form>
+        <div class='footer'>
+            <textarea form='form' name="message_txt" id="message_txt" cols='65' rows='2' placeholder="Did you know fork = recursion ..." ></textarea>
+            <button type='button' onclick="sendMessage() "class="pull-right">Send</button>
         </div>
     </body>
 
@@ -32,11 +30,20 @@
         //get request - specifies uri and callback function
         $.get("needs_uri", function(data, status) {
             //replace the html in the converstaion with what was returned by get request
-            document.getElementByID('conversation').innerHTML = data;
+            document.getElementById('conversation').innerHTML = data;
         });
 
         //calls this function again in a second.
         window.setTimeout(fetchMessages, 1000);
+    }
+
+    function sendMessage() {
+        var message = document.getElementById("message_txt").value;
+
+        //Post request - sends the message to the specified endpoint
+        $.post('needs_uri', {msg : message}, function(data,status) {
+            document.getElementById("message_txt").value = "";
+        });
     }
     </script>
 </html>
