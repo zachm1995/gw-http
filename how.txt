@@ -1,0 +1,2 @@
+The main method is called with one argument (the port)
+file descriptor is set equal to server_create function

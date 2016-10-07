@@ -32,32 +32,53 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <unistd.h>
 
 /*
  * Create the file descriptor to accept on.  Return -1 otherwise.
  */
+
 int
 server_create(short int port)
 {
+	// Creates a new file descriptor
 	int fd;
+
+	// Create new sockaddr_in struct (declared in library)
 	struct sockaddr_in server;
 
+	// Check if socket is not established
 	if ((fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Establishing socket");
+
+		// Return error code
 		return -1;
 	}
 
+	// Set value to default values Address Family(AF) vs Protocol Family (PF)
 	server.sin_family      = AF_INET;
+
+	// Set port value to passed in port 
 	server.sin_port        = htons(port);
+
+	// Uses inet_aton function (in library) to get host address
+	// INADDR_ANY allows unknown host IP
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	// Binds the socket (fd) to the server
 	if (bind(fd, (struct sockaddr *)&server, sizeof(server))) {
 		perror("binding receive socket");
 		return -1;
 	}
-	listen(fd, 10);
 
+	// Permits accepting incoming connections, adds a queue limit (10)
+	if(listen(fd, 10) < 0) {
+		perror("listen call failed");
+		return -1;
+	}
+
+	// Returns the file descriptor (socket)
 	return fd;
 }
 
@@ -65,17 +86,28 @@ server_create(short int port)
  * Pass in the accept file descriptor returned from
  * server_create. Return a new file descriptor or -1 on error.
  */
+
 int
 server_accept(int fd)
 {
+	// Create new sockaddr_in struct (declared in library)
 	struct sockaddr_in sai;
+
+	// Creates new file descriptor
 	int new_fd;
+
+	// Creates a variable for the length of the sai struct
 	unsigned int len = sizeof(sai);
 
+	// Sets the local file descriptor to an accepted file descriptor
 	new_fd = accept(fd, (struct sockaddr *)&sai, &len);
+
+	// Error handling
 	if (-1 == new_fd) {
 		perror("accept");
 		return -1;
 	}
+
+	// Returns accepted file descriptor
 	return new_fd;
 }

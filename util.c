@@ -45,30 +45,49 @@
  * describes the request being made, including the path that is
  * requested (r->path).
  */
+
+// Set the maximum size of the request
 #define MAX_REQ_SZ 1024
+
 struct http_req *
 newfd_create_req(int new_fd)
 {
+	// Create a new http_req[est] struct (defined in simple_http.h)
 	struct http_req *r;
+
+	// Create a char* to hold the data of the request
 	char *data;
+
+	// Create int for the amount read
 	int amnt;
 
+	// Allocate memory for the maximum amount of data
 	data = malloc(MAX_REQ_SZ * sizeof(char));
+
+	// Error handling if malloc fails
 	if (!data) return NULL;
 
+	// Sets amnt to the number of bytes read
 	amnt = read(new_fd, data, MAX_REQ_SZ);
+
+	// Error handling if read fails
 	if (amnt < 0) {
 		perror("read off of new file descriptor");
 		free(data);
 		return NULL;
 	}
 
+	// Calls shttp_alloc_req (in simple_http.c), r now has all info except path
 	r = shttp_alloc_req(new_fd, data);
+	
+	// Error handling for memory allocation
 	if (!r) {
 		printf("Could not allocate request\n");
 		free(data);
 		return NULL;
 	}
+
+	// Calls shttp_get_path function (in simple_http.c)
 	if (shttp_get_path(r)) {
 		data[amnt] = '\0';
 		printf("Incorrectly formatted HTTP request:\n\t%s\n", data);
@@ -127,11 +146,17 @@ done:
 /*
  * Process a client request on a newly opened file descriptor.
  */
+
 void
 client_process(int fd)
 {
+	// Create a new http_req[est] struct (defined in simple_http.h)
 	struct http_req *r;
+
+	// Create new char* for the response
 	char *response;
+
+	// Create an int to hold the length
 	int len;
 
 	/*
@@ -139,11 +164,16 @@ client_process(int fd)
 	 * it.  This should probably be in the worker
 	 * threads/processes.
 	 */
+
+	// Sets the http request struct to the return value of newfd_create_req function (above)
 	r = newfd_create_req(fd);
+
+
 	if (!r || !r->path) {
 		close(fd);
 		return;
 	}
+
 	assert(r);
 	assert(r->path);
 

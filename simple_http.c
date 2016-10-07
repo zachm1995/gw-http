@@ -33,18 +33,34 @@
 struct http_req *
 shttp_alloc_req(int fd, char *request)
 {
+	// Create a new http_req[est] struct (defined in simple_http.h)
 	struct http_req *r;
+
+	// Asserts that the request exists
 	assert(request);
 
+	// Allocates memory for the local struct
 	r = malloc(sizeof(struct http_req));
+
+	// Error handling for malloc
 	if (!r) return NULL;
+
+	// Fills the struct with 0s
 	memset(r, 0, sizeof(struct http_req));
 
+	// Initializes the struct attribute to passed request
 	r->request = request;
+
+	// Initializes the struct attribute to length of request
 	r->req_len = strlen(request);
+
+	// Initializes the struct attribute to default value of NULL
 	r->path = NULL;
+
+	// Initializes the struct attribute to passed file descriptor
 	r->fd = fd;
 
+	// Returns a http_req struct with all the attributes initialized to values
 	return r;
 }
 
@@ -62,8 +78,13 @@ shttp_free_req(struct http_req *r)
 static inline char *
 find_whitespace(char *s)
 {
+	// Asserts that the passed in char* exists
 	assert(s);
+
+	// Iterates through the char* and counts number of whitespaces
 	while (*s != ' ' && *s != '\0') s++;
+
+	// Returns the number of whitespaces in char*
 	return s;
 }
 
@@ -71,18 +92,29 @@ find_whitespace(char *s)
  * Pass in the request.  Set the ->path field in r to point to the
  * path that is being requested.
  */
+
 int
 shttp_get_path(struct http_req *r)
 {
+	// Create char* for current position, end, and path
 	char *curr, *end, *path;
 
+	// Assert that r exists
 	assert(r);
+
+	// Assert that the request attribute in r exists
 	assert(r->request);
 
+	// Checks if request is a properly formatted HTTP GET request
 	if (strncmp(r->request, "GET ", strlen("GET "))) return -1;
+
+	// Sets the path variable to curr variable to the request attribute in r
 	path = curr = r->request + sizeof("GET ")-1;
 
+	// Sets end to the number of whitespaces in char*
 	end = find_whitespace(curr);
+
+
 	if (*end == '\0') return -1;
 	*end = '\0';
 

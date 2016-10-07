@@ -59,6 +59,7 @@
 void
 server_single_request(int accept_fd)
 {
+	// Initializes file descriptor
 	int fd;
 
 	/*
@@ -66,7 +67,11 @@ server_single_request(int accept_fd)
 	 * That main thread will want to hand off the new fd to the
 	 * new threads/processes/thread pool.
 	 */
+
+	// Calls server_accept function in server.c
 	fd = server_accept(accept_fd);
+
+	// Calls client_process function in util.c
 	client_process(fd);
 
 	return;
@@ -75,7 +80,11 @@ server_single_request(int accept_fd)
 int
 main(int argc, char *argv[])
 {
+
+
 	short int port;
+	
+	// File Descriptor: An integer that references a specific file in memory (like a pointer)
 	int accept_fd;
 
 	if (argc != 2) {
@@ -85,11 +94,19 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
+	// Since the argument passed into the main call is a string, it is converted to an integer
 	port = atoi(argv[1]);
+
+	// Calls server_create function in server.c
+	// Binds the file descriptor to socket and sets up the listening function
 	accept_fd = server_create(port);
+
+	// Error handler
 	if (accept_fd < 0) return -1;
 
+	// Calls server_single_request (above)
 	server_single_request(accept_fd);
+
 	close(accept_fd);
 
 	return 0;
